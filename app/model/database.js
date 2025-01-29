@@ -1,9 +1,8 @@
 const { DataTypes } = require("sequelize");
-const { Category, Categories } = require("./category");
 
 const createDatabase = (sequelize) => {
   return sequelize.define(
-    "products",
+    "product",
     {
       product_id: {
         type: DataTypes.INTEGER,
@@ -22,6 +21,7 @@ const createDatabase = (sequelize) => {
         type: DataTypes.FLOAT,
         allowNull: false,
       },
+
       cost_price: {
         type: DataTypes.FLOAT,
         allowNull: false,
@@ -29,6 +29,10 @@ const createDatabase = (sequelize) => {
       compare_price: {
         type: DataTypes.FLOAT,
         allowNull: true,
+      },
+      image: {
+        type: DataTypes.STRING,
+        allowNull: false,
       },
       stock_quantity: {
         type: DataTypes.INTEGER,
@@ -38,9 +42,13 @@ const createDatabase = (sequelize) => {
         type: DataTypes.INTEGER,
         allowNull: false,
       },
+      supplier_id: {
+        type: DataTypes.INTEGER,
+        allowNull: false,
+      },
     },
     {
-      tableName: "products",
+      tableName: "product",
       timestamps: false,
     }
   );

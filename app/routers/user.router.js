@@ -8,12 +8,12 @@ const {
 } = require("../controllers/user.controllers");
 const { validatePassword } = require("../middlewares/log/checkPassword");
 
-const routerDatabase = express.Router();
+const routerUsers = express.Router();
 
-routerDatabase.get("/", getAllUsers);
-routerDatabase.get("/:id", getUserByID);
-routerDatabase.post("/", createDataUsers);
-routerDatabase.put("/:id", updateDataUser);
-routerDatabase.delete("/:id", deleteDataUser);
+routerUsers.get("/", getAllUsers);
+routerUsers.get("/:id", getUserByID);
+routerUsers.post("/", createDataUsers);
+routerUsers.put("/:id", updateDataUser);
+routerUsers.delete("/:id", deleteDataUser);
 
-module.exports = routerDatabase;
+module.exports = routerUsers;
