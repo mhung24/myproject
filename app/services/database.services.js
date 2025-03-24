@@ -1,20 +1,25 @@
-const { where } = require("sequelize");
-
 const { Product, Category, Ratings, Supplier } = require("../model");
+const { Sequelize } = require("sequelize");
 
 const getAll = async (limit, skip) => {
+  const totalCount = await Product.count();
   const data = await Product.findAll({
     limit: limit,
     offset: skip,
+
     include: [
       {
         model: Ratings,
-        attributes: ["score", "comment"],
+        attributes: ["rating_id"],
       },
 
       {
         model: Category,
-        attributes: ["name"], // Chọn các trường cần thiết từ Rating
+        attributes: ["name"],
+      },
+      {
+        model: Supplier,
+        attributes: ["name"],
       },
     ],
   });
@@ -28,17 +33,40 @@ const getAll = async (limit, skip) => {
       costPrice: product.cost_price,
       comparePrice: product.compare_price,
       image: product.image,
+      url: product.url,
       quantity: product.stock_quantity,
-      category: product.Category.name, // Lấy tên danh mục
+      category: product.Category.name,
+      supplier: product.Supplier.name,
       ratings: product.Ratings.map((rating) => ({
-        score: rating.score,
-        comment: rating.comment,
+        id_rating: rating.rating_id,
       })),
     };
   });
 
   if (listData) {
-    return listData;
+    return {
+      product: listData,
+      total: totalCount,
+      limit: limit,
+      skip: skip,
+    };
+  } else {
+    return "Not Found";
+  }
+};
+
+const getProductWherePrice = async (price) => {
+  const data = await Product.findAll({
+    where: {
+      cost_price: {
+        [Sequelize.Op.gte]: +price - (+price * 20) / 100, // Lớn hơn hoặc bằng 1
+        [Sequelize.Op.lte]: +price + (+price * 20) / 100, // Nhỏ hơn hoặc bằng 10
+      },
+    },
+  });
+
+  if (data) {
+    return data;
   } else {
     return "Not Found";
   }
@@ -58,25 +86,54 @@ const getDataProductID = async (id) => {
   }
 };
 
-const getDataProductByID = async (id, limit, skip) => {
+const getDataCategoryID = async (id) => {
+  const data = await Product.findAll({
+    limit: 20,
+
+    where: {
+      category_id: id,
+    },
+  });
+
+  if (data) {
+    return data;
+  } else {
+    return "Not Found";
+  }
+};
+
+const getDataProductImage = async (file) => {
+  const data = await Product.findOne({
+    where: {
+      image: file,
+    },
+  });
+
+  if (data) {
+    return data.image;
+  } else {
+    return "Not Found";
+  }
+};
+
+const getDataProductByID = async (id) => {
   const data = await Product.findAll({
     where: { product_id: id },
-    limit: limit,
-    offset: skip,
+
     include: [
       {
         model: Ratings,
-        attributes: ["score", "comment"],
+        attributes: ["rating_id"],
       },
 
       {
         model: Category,
-        attributes: ["name"], // Chọn các trường cần thiết từ Rating
+        attributes: ["category_id", "name"],
       },
 
       {
         model: Supplier,
-        attributes: ["name"],
+        attributes: ["supplier_id", "name"],
       },
     ],
   });
@@ -90,12 +147,14 @@ const getDataProductByID = async (id, limit, skip) => {
       costPrice: product.cost_price,
       comparePrice: product.compare_price,
       image: product.image,
+      url: product.url,
       quantity: product.stock_quantity,
+      category_id: product.Category.category_id,
       category: product.Category.name,
+      supplier_id: product.Supplier.supplier_id,
       supplier: product.Supplier.name,
       ratings: product.Ratings.map((rating) => ({
-        score: rating.score,
-        comment: rating.comment,
+        id_rating: rating.rating_id,
       })),
     };
   });
@@ -107,16 +166,62 @@ const getDataProductByID = async (id, limit, skip) => {
   }
 };
 
-const createDataProduct = async (list) => {
-  console.log(list);
+const getDataSearch = async (search) => {
+  const data = await Product.findAll({
+    where: {
+      name: {
+        [Sequelize.Op.like]: `%${search}%`,
+      },
+    },
 
-  const newList = await Product.create(list);
-  return newList;
+    include: [
+      {
+        model: Ratings,
+        attributes: ["rating_id"],
+      },
+
+      {
+        model: Category,
+        attributes: ["category_id", "name"],
+      },
+
+      {
+        model: Supplier,
+        attributes: ["supplier_id", "name"],
+      },
+    ],
+  });
+
+  const listData = data.map((product) => {
+    return {
+      id: product.product_id,
+      title: product.name,
+      description: product.description,
+      price: product.price,
+      costPrice: product.cost_price,
+      comparePrice: product.compare_price,
+      image: product.image,
+      url: product.url,
+      quantity: product.stock_quantity,
+      category_id: product.Category.category_id,
+      category: product.Category.name,
+      supplier_id: product.Supplier.supplier_id,
+      supplier: product.Supplier.name,
+      ratings: product.Ratings.map((rating) => ({
+        id_rating: rating.rating_id,
+      })),
+    };
+  });
+
+  if (listData) {
+    return listData;
+  } else {
+    return "Not Found";
+  }
 };
 
-const createRating = async (list) => {
-  // const newList = await Ratings.create(list);
-  // return newList;
+const createDataProduct = async (list, res) => {
+  return await Product.create(list);
 };
 
 const createCategory = async (list) => {
@@ -125,8 +230,6 @@ const createCategory = async (list) => {
 };
 
 const updateDataProduct = async (id, list) => {
-  console.log(id);
-
   const data = await Product.findOne({
     where: {
       product_id: id,
@@ -139,8 +242,11 @@ const updateDataProduct = async (id, list) => {
       (data.price = list.price),
       (data.cost_price = list.cost_price),
       (data.compare_price = list.compare_price),
+      (data.image = list.image),
       (data.stock_quantity = list.stock_quantity),
       (data.category_id = list.category_id),
+      (data.supplier_id = list.supplier_id),
+      (data.url = list.url),
       data.save();
 
     return data;
@@ -162,12 +268,94 @@ const deleteProductById = async (id) => {
     return false;
   }
 };
+
+const searchDatabase = async (title) => {
+  let listData;
+  if (title) {
+    const data = await Product.findAll({
+      where: {
+        name: {
+          [Sequelize.Op.like]: `%${title}%`, // Tìm kiếm gần đúng
+        },
+      },
+    });
+
+    listData = data.map((product) => {
+      return {
+        id: product.product_id,
+        title: product.name,
+        costPrice: product.cost_price,
+        image: product.image,
+      };
+    });
+  } else {
+    const data = await Product.findAll();
+
+    listData = data.map((product) => {
+      return {
+        id: product.product_id,
+        title: product.name,
+        costPrice: product.cost_price,
+        image: product.image,
+      };
+    });
+  }
+
+  if (listData) {
+    return listData;
+  } else {
+    return "Not found";
+  }
+};
+
+const searchDatabaseByCateEndSup = async (
+  category,
+  brand,
+  minPrice,
+  maxPrice,
+  limit,
+  skip
+) => {
+  const totalCount = await Product.count();
+
+  const whereClause = {
+    cost_price: {
+      [Sequelize.Op.gte]: Number(minPrice),
+      [Sequelize.Op.lte]: Number(maxPrice),
+    },
+  };
+
+  if (brand) whereClause.supplier_id = brand;
+  if (category) whereClause.category_id = category;
+
+  const data = await Product.findAll({
+    limit: limit,
+    offset: skip,
+    where: whereClause,
+  });
+
+  if (data) {
+    return {
+      product: data,
+      total: totalCount,
+      limit: limit,
+      skip: skip,
+    };
+  } else {
+    return "Not found";
+  }
+};
 module.exports = {
   getAll,
   getDataProductByID,
   createDataProduct,
-  createRating,
   createCategory,
   updateDataProduct,
   deleteProductById,
+  getDataProductImage,
+  getDataSearch,
+  getDataCategoryID,
+  getProductWherePrice,
+  searchDatabase,
+  searchDatabaseByCateEndSup,
 };

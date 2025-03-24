@@ -2,32 +2,16 @@ const { DataTypes } = require("sequelize");
 
 const oderItem = (sequelize) => {
   return sequelize.define(
-    "oderItem",
+    "oderItems",
     {
-      order_item_id: {
-        type: DataTypes.INTEGER,
-        primaryKey: true,
-        autoIncrement: true,
-      },
-      order_id: {
-        type: DataTypes.INTEGER,
-        allowNull: false,
-      },
-      product_id: {
-        type: DataTypes.INTEGER,
-        allowNull: false,
-      },
-      quantity: {
-        type: DataTypes.INTEGER,
-        allowNull: false,
-      },
-      price: {
-        type: DataTypes.DECIMAL(10, 2),
-        allowNull: false,
-      },
+      id: { type: DataTypes.INTEGER, primaryKey: true, autoIncrement: true },
+      name: { type: DataTypes.STRING, allowNull: false },
+      images: { type: DataTypes.STRING, allowNull: false },
+      price: { type: DataTypes.DECIMAL(10, 2), allowNull: false },
+      stock: { type: DataTypes.INTEGER, defaultValue: 0 },
     },
     {
-      tableName: "Order_Items",
+      tableName: "oderItems",
       timestamps: true,
     }
   );

@@ -15,28 +15,33 @@ const createDatabase = (sequelize) => {
       },
       description: {
         type: DataTypes.TEXT,
-        allowNull: false,
+        allowNull: true,
       },
       price: {
         type: DataTypes.FLOAT,
-        allowNull: false,
+        allowNull: true,
       },
 
       cost_price: {
         type: DataTypes.FLOAT,
-        allowNull: false,
+        allowNull: true,
       },
       compare_price: {
         type: DataTypes.FLOAT,
         allowNull: true,
       },
       image: {
+        type: DataTypes.TEXT,
+        allowNull: true,
+      },
+
+      url: {
         type: DataTypes.STRING,
-        allowNull: false,
+        allowNull: true,
       },
       stock_quantity: {
         type: DataTypes.INTEGER,
-        allowNull: false,
+        allowNull: true,
       },
       category_id: {
         type: DataTypes.INTEGER,
@@ -49,7 +54,7 @@ const createDatabase = (sequelize) => {
     },
     {
       tableName: "product",
-      timestamps: false,
+      timestamps: true,
     }
   );
 };

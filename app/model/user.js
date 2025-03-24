@@ -4,7 +4,7 @@ const createUser = (sequelize) => {
   return sequelize.define(
     "users",
     {
-      id: {
+      user_id: {
         type: DataTypes.INTEGER,
         autoIncrement: true,
         primaryKey: true,
@@ -31,6 +31,30 @@ const createUser = (sequelize) => {
       },
       address: {
         type: DataTypes.STRING,
+        allowNull: true,
+      },
+      role: {
+        type: DataTypes.INTEGER,
+        allowNull: false,
+      },
+
+      province: {
+        type: DataTypes.INTEGER,
+        allowNull: true,
+      },
+
+      distric: {
+        type: DataTypes.INTEGER,
+        allowNull: true,
+      },
+
+      commune: {
+        type: DataTypes.INTEGER,
+        allowNull: true,
+      },
+
+      avatar: {
+        type: DataTypes.TEXT,
         allowNull: true,
       },
     },

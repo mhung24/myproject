@@ -11,7 +11,6 @@ const Rating = (sequelize) => {
       },
       user_id: {
         type: DataTypes.INTEGER,
-
         allowNull: false,
       },
       product_id: {
@@ -34,7 +33,7 @@ const Rating = (sequelize) => {
     },
     {
       modelName: "Rating",
-      timestamps: false,
+      timestamps: true,
     }
   );
 };
