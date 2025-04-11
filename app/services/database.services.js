@@ -88,7 +88,7 @@ const getDataProductID = async (id) => {
 
 const getDataCategoryID = async (id) => {
   const data = await Product.findAll({
-    limit: 20,
+    limit: 10,
 
     where: {
       category_id: id,

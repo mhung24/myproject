@@ -110,6 +110,8 @@ const createDataProducts = async (req, res) => {
     url: list.url,
   };
 
+  console.log(listData);
+
   if (listData.title !== "") {
     const newList = await createDataProduct(listData, res);
     res.status(201).send(newList);
